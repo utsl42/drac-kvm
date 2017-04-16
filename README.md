@@ -2,11 +2,17 @@
 
 ## Overview
 
+The integrated Dell Remote Access Controller  or DRAC (iDRAC) is an out-of-band
+management platform  on certain  Dell servers.  It provides  functionality that
+helps you deploy,  update, monitor and maintain Dell PowerEdge  servers with or
+without a systems management software agent.
+
+[dell.com](https://www.dell.com/)
+
 ## Description
 
 A simple CLI launcher for Dell DRAC KVM sessions.
 
-## Setup
 
 This has been tested on the following Dell servers:
 
@@ -17,6 +23,8 @@ This has been tested on the following Dell servers:
 This has also been tested against a Supermicro based system:
 
  * X9DR7-LN4F motherboard with ATEN based iKVIM (3.19 fimrware)
+
+## Setup
 
 It requires that you have java installed on your machine (specifically the `javaws` binary).
 
