@@ -29,7 +29,7 @@ following to quickly install it:
 go get github.com/paulmaddox/drac-kvm
 ```
 
-# Homebrew
+### Homebrew
 
 If you already  have Homebrew configured on  your system then you  can just run
 the following to quickly install it:
