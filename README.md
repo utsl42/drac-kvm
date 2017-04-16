@@ -1,3 +1,5 @@
+# drac-kvm ![License badge][license-img]
+
 Dell DRAC KVM Launcher
 =========
 
@@ -42,18 +44,18 @@ Installing (via Go)
 ----
 
 If you already have Go configured on your system then you can just run the following to quickly install it:
+
 ```bash
-$ go get github.com/paulmaddox/drac-kvm
+go get github.com/paulmaddox/drac-kvm
 ```
 
-Installing (pre built binaries)
+Installing (via Homebrew)
 ----
 
-If you don't have Go installed already on your system, then included in this repository are some prebuilt binaries:
-
-* [Linux 64bit](https://github.com/PaulMaddox/drac-kvm/blob/master/binaries/drac.linux_64bit?raw=true)
-
-* [Mac OSX 64bit](https://github.com/PaulMaddox/drac-kvm/blob/master/binaries/drac.osx_64bit?raw=true)
+```bash
+brew tap rockyluke/devops
+brew install drac-kvm
+```
 
 Configuration file
 ----
@@ -105,3 +107,19 @@ Credits
 @jamesdotcuff's helpful blog post:
 
 http://blog.jcuff.net/2013/10/fun-with-idrac.html
+
+## Development
+
+Feel free to contribute on GitHub.
+
+```
+    ╚⊙ ⊙╝
+  ╚═(███)═╝
+ ╚═(███)═╝
+╚═(███)═╝
+ ╚═(███)═╝
+  ╚═(███)═╝
+   ╚═(███)═╝
+```
+
+[license-img]: https://img.shields.io/badge/license-Apache%202.0-blue.svg
