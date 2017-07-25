@@ -9,9 +9,13 @@ without a systems management software agent.
 
 [dell.com](https://www.dell.com/)
 
+A preliminary implementation of iLO (Integrated Lights Out) KVM is available for version iLO 3 and iLO 4.
+
+[hp.com](https://www.hpe.com/)
+
 ## Description
 
-A simple CLI launcher for Dell DRAC KVM sessions.
+A simple CLI launcher for Dell DRAC and HP iLO KVM sessions
 
 
 This has been tested on the following Dell servers:
@@ -19,6 +23,12 @@ This has been tested on the following Dell servers:
  * 11th Generation (eg: Dell R710 / iDRAC6)
 
  * 12th Generation (eg: Dell R720 / iDRAC7)
+
+The following HP servers:
+
+ * 7th Generation (eg: HP DL120 G7)
+
+ * 8th Generation (eg: HP DL160 G8)
 
 This has also been tested against a Supermicro based system:
 
@@ -34,7 +44,7 @@ If you  already have Go  configured on  your system then  you can just  run the
 following to quickly install it:
 
 ```bash
-go get github.com/paulmaddox/drac-kvm
+go get github.com/rockyluke/drac-kvm
 ```
 
 ### Homebrew
