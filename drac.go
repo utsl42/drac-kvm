@@ -11,6 +11,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"encoding/json"
+	"io/ioutil"
 )
 
 // DRAC contains all of the information required
@@ -28,6 +30,8 @@ var Templates = map[int]string{
 	1: ikvm169,
 	6: viewer6,
 	7: viewer7,
+	103: viewer7,
+	104: viewer7,
 }
 
 // GetVersion attempts to detect the iDRAC version by checking
@@ -56,6 +60,22 @@ func (d *DRAC) GetVersion() int {
 
 	client := &http.Client{
 		Transport: transport,
+	}
+
+	// Check for iLO4 specific libs
+	if response, err := client.Get("https://" + d.Host + "/html/intgapp4_231.jar"); err == nil {
+		defer response.Body.Close()
+		if response.StatusCode == 200 {
+			return 104
+		}
+	}
+
+	// Check for iLO3 specific libs
+	if response, err := client.Get("https://" + d.Host + "/html/intgapp3_231.jar"); err == nil {
+		defer response.Body.Close()
+		if response.StatusCode == 200 {
+			return 103
+		}
 	}
 
 	// Check for iDRAC7 specific libs
@@ -95,6 +115,74 @@ func (d *DRAC) GetVersion() int {
 
 }
 
+// iLO Viewer that logs in, fetch the session_key cookie to be able to generate
+// a correct jnlp
+func (d *DRAC) iLOViewer() (string, error) {
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+		Dial: func(netw, addr string) (net.Conn, error) {
+			deadline := time.Now().Add(5 * time.Second)
+			c, err := net.DialTimeout(netw, addr, time.Second*5)
+			if err != nil {
+				return nil, err
+			}
+			c.SetDeadline(deadline)
+			return c, nil
+		},
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
+
+	// Post parameters to login to iLO
+	values := map[string]string{"method": "login", "user_login": d.Username, "password": d.Password}
+	jsonValue, _ := json.Marshal(values)
+
+	if res, err := client.Post("https://" + d.Host + "/json/login_session", "", bytes.NewBuffer(jsonValue)); err == nil {
+		defer res.Body.Close()
+		if res.StatusCode == 200 {
+			// Fetch session_key from json response using an
+			// interface in order to build a cookie
+			bodyBytes, err := ioutil.ReadAll(res.Body)
+			var f interface{}
+			err = json.Unmarshal(bodyBytes, &f)
+			if err != nil {
+				fmt.Println("Couldn't decode json", err)
+			}
+			m := f.(map[string]interface{})
+			session_key := m["session_key"].(string)
+
+			cookie := http.Cookie{Name: "session_key", Value: session_key}
+			req, err := http.NewRequest("GET", "https://" + d.Host + "/html/jnlp_template.html", nil)
+			req.AddCookie(&cookie)
+			if res, err := client.Do(req); err == nil {
+				defer res.Body.Close()
+				if res.StatusCode == 200 {
+					bodyBytes, _ := ioutil.ReadAll(res.Body)
+					bodyString := string(bodyBytes)
+					// We need to:
+					// - replace placeholder with actual values
+					// - skip the first and last line of the jnlp
+					// template
+					r := strings.NewReplacer("<%= this.baseUrl %>", "https://" + d.Host + "/",
+						"<%= this.sessionKey %>", session_key,
+						"<%= this.langId %>", "en")
+					jnlp := r.Replace(bodyString)
+					_jnlp := strings.Split(jnlp, "\n")
+					jnlp = strings.Join(_jnlp[1 : len(_jnlp) - 1],"\n")
+					return jnlp, err
+				} else {
+					return "", errors.New("Couldn't fetch jnlp template")
+				}
+			}
+		}
+	}
+	return "", errors.New("Couldn't login to iLO")
+}
+
 // Viewer returns a viewer.jnlp template filled out with the
 // necessary details to connect to a particular DRAC host
 func (d *DRAC) Viewer() (string, error) {
@@ -111,17 +199,22 @@ func (d *DRAC) Viewer() (string, error) {
 		return "", errors.New("unable to detect DRAC version")
 	}
 
-	log.Printf("Found iDRAC version %d", version)
 
 	if _, ok := Templates[version]; !ok {
 		msg := fmt.Sprintf("no support for DRAC v%d", version)
 		return "", errors.New(msg)
 	}
 
-	// Generate a JNLP viewer from the template
-	// Injecting the host/user/pass information
-	buff := bytes.NewBufferString("")
-	err := template.Must(template.New("viewer").Parse(Templates[version])).Execute(buff, d)
-	return buff.String(), err
-
+	// If it's an iLO version
+	if version > 100 {
+		log.Printf("Found iLO version %d", version - 100)
+		return d.iLOViewer()
+	} else {
+		log.Printf("Found iDRAC version %d", version)
+		// Generate a JNLP viewer from the template
+		// Injecting the host/user/pass information
+		buff := bytes.NewBufferString("")
+		err := template.Must(template.New("viewer").Parse(Templates[version])).Execute(buff, d)
+		return buff.String(), err
+	}
 }
