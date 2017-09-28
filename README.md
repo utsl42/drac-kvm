@@ -26,7 +26,7 @@ This has been tested on the following Dell servers:
 
  * 13th Generation (eg: Dell R730 / iDRAC8)
 
-The following HP servers:
+This has been tested on the following HP servers:
 
  * 7th Generation (eg: HP DL120 G7)
 
@@ -43,7 +43,7 @@ It requires  that you  have java  installed on  your machine  (specifically the
 
 ```bash
 docker run \
-       -e DISPLAY=${DISPLAY}
+       -e DISPLAY=${DISPLAY} \
 	   -e XAUTHORITY=/tmp/.Xauthority \
 	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
 	   -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -54,9 +54,12 @@ docker run \
 
 ```bash
 brew install socat
+
+DISPLAY_ADDRESS=$(ifconfig|grep 'inet '|grep -v '127.0.0.1'| head -1|awk '{print $2}')
+
 socat TCP-LISTEN:6001,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &
 docker run \
-       -e DISPLAY=${DISPLAY}
+       -e DISPLAY=${DISPLAY_ADDRESS} \
 	   -e XAUTHORITY=/tmp/.Xauthority \
 	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
 	   -v /tmp/.X11-unix:/tmp/.X11-unix \
