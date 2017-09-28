@@ -97,12 +97,12 @@ func (d *DRAC) GetVersion() int {
 	}
 
 	// Check for iDRAC8 specific libs
-	if response, err := client.Head("https://" + d.Host + "/images/Ttl_2_iDRAC8_Base_ML.png"); err == nil {
-		defer response.Body.Close()
-		if response.StatusCode == 200 {
-			return 8
-		}
-	}
+	// if response, err := client.Head("https://" + d.Host + "/images/Ttl_2_iDRAC8_Base_ML.png"); err == nil {
+	// 	defer response.Body.Close()
+	// 	if response.StatusCode == 200 {
+	// 		return 8
+	// 	}
+	// }
 
 	return version
 

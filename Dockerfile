@@ -21,7 +21,8 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 RUN apt-get update  -qq && \
     apt-get upgrade -qq -y && \
     apt-get install -qq -y \
-      icedtea-netx
+      icedtea-netx \
+      libx11-6
 
 RUN go get github.com/rockyluke/drac-kvm
 
