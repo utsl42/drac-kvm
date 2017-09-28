@@ -1,3 +1,5 @@
+// -*- go -*-
+
 package main
 
 import (
@@ -10,6 +12,7 @@ var (
  	winJavaPath = "" //C:\\Program Files (x86)\\Java\\jre7\\bin\\javaws.exe
 )
 
+// DefaultJavaPath is the default Java path on Windows
 func DefaultJavaPath() string {
  	//javaws lives in a folder with a version number on Windows, so we can search for javaws.exe
  	for _, r := range javaRoots {
@@ -24,3 +27,4 @@ func visit(path string, f os.FileInfo, err error) error {
  	}
  	return nil
 }
+// EOF

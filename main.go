@@ -1,3 +1,5 @@
+// -*- go -*-
+
 package main
 
 import (
@@ -18,12 +20,14 @@ import (
 var _host = pflag.StringP("host", "h", "some.hostname.com", "The DRAC host (or IP)")
 var _username = pflag.StringP("username", "u", "", "The DRAC username")
 var _password = pflag.BoolP("password", "p", false, "Prompt for password (optional, will use 'calvin' if not present)")
-var _version = pflag.IntP("version", "v", -1, "iDRAC version (6 or 7) (supermicro ikvm as 1)")
+var _version = pflag.IntP("version", "v", -1, "iDRAC version (6, 7 or 8)")
 var _delay = pflag.IntP("delay", "d", 10, "Number of seconds to delay for javaws to start up & read jnlp before deleting it")
 var _javaws = pflag.StringP("javaws", "j", DefaultJavaPath(), "The path to javaws binary")
 
 const (
+	// DefaultUsername is the default username on Dell iDRAC
 	DefaultUsername = "root"
+	// DefaultPassword is the default password on Dell iDRAC
 	DefaultPassword = "calvin"
 )
 
@@ -141,3 +145,5 @@ func main() {
 	// Give javaws a few seconds to start & read the jnlp
 	time.Sleep(time.Duration(*_delay) * time.Second)
 }
+// EOF
+

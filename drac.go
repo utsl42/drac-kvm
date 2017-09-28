@@ -1,3 +1,5 @@
+// -*- go -*-
+
 package main
 
 import (
@@ -30,6 +32,7 @@ var Templates = map[int]string{
 	1: ikvm169,
 	6: viewer6,
 	7: viewer7,
+	8: viewer8,
 	103: viewer7,
 	104: viewer7,
 }
@@ -115,7 +118,7 @@ func (d *DRAC) GetVersion() int {
 
 }
 
-// iLO Viewer that logs in, fetch the session_key cookie to be able to generate
+// iLO Viewer that logs in, fetch the sessionKey cookie to be able to generate
 // a correct jnlp
 func (d *DRAC) iLOViewer() (string, error) {
 	transport := &http.Transport{
@@ -144,7 +147,7 @@ func (d *DRAC) iLOViewer() (string, error) {
 	if res, err := client.Post("https://" + d.Host + "/json/login_session", "", bytes.NewBuffer(jsonValue)); err == nil {
 		defer res.Body.Close()
 		if res.StatusCode == 200 {
-			// Fetch session_key from json response using an
+			// Fetch sessionKey from json response using an
 			// interface in order to build a cookie
 			bodyBytes, err := ioutil.ReadAll(res.Body)
 			var f interface{}
@@ -153,9 +156,9 @@ func (d *DRAC) iLOViewer() (string, error) {
 				fmt.Println("Couldn't decode json", err)
 			}
 			m := f.(map[string]interface{})
-			session_key := m["session_key"].(string)
+			sessionKey := m["sessionKey"].(string)
 
-			cookie := http.Cookie{Name: "session_key", Value: session_key}
+			cookie := http.Cookie{Name: "sessionKey", Value: sessionKey}
 			req, err := http.NewRequest("GET", "https://" + d.Host + "/html/jnlp_template.html", nil)
 			req.AddCookie(&cookie)
 			if res, err := client.Do(req); err == nil {
@@ -168,7 +171,7 @@ func (d *DRAC) iLOViewer() (string, error) {
 					// - skip the first and last line of the jnlp
 					// template
 					r := strings.NewReplacer("<%= this.baseUrl %>", "https://" + d.Host + "/",
-						"<%= this.sessionKey %>", session_key,
+						"<%= this.sessionKey %>", sessionKey,
 						"<%= this.langId %>", "en")
 					jnlp := r.Replace(bodyString)
 					_jnlp := strings.Split(jnlp, "\n")
@@ -218,3 +221,4 @@ func (d *DRAC) Viewer() (string, error) {
 		return buff.String(), err
 	}
 }
+// EOF

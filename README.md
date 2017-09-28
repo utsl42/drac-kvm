@@ -1,15 +1,24 @@
 # drac-kvm ![License badge][license-img]
 
+1. [Overview](#overview)
+2. [Description](#description)
+3. [Setup](#setup)
+4. [Usage](#usage)
+5. [Limitations](#limitations)
+6. [Development](#development)
+7. [Miscellaneous](#miscellaneous)
+
 ## Overview
 
 The integrated Dell Remote Access Controller  or DRAC (iDRAC) is an out-of-band
-management platform  on certain  Dell servers.  It provides  functionality that
+management platform  on certain Dell  servers.  It provides  functionality that
 helps you deploy,  update, monitor and maintain Dell PowerEdge  servers with or
 without a systems management software agent.
 
 [dell.com](https://www.dell.com/)
 
-A preliminary implementation of iLO (Integrated Lights Out) KVM is available for version iLO 3 and iLO 4.
+A preliminary  implementation of iLO  (Integrated Lights Out) KVM  is available
+for version iLO 3 and iLO 4.
 
 [hp.com](https://www.hpe.com/)
 
@@ -36,7 +45,13 @@ This has also been tested against a Supermicro based system:
 
 ## Setup
 
-It requires that you have java installed on your machine (specifically the `javaws` binary).
+It requires  that you  have java  installed on  your machine  (specifically the
+`javaws` binary).
+
+### Docker
+
+```bash
+```
 
 ### Go
 

@@ -1,3 +1,5 @@
+// -*- go -*-
+
 package main
 
 const viewer6 string = `
@@ -39,3 +41,4 @@ const viewer6 string = `
   </resources>
 </jnlp>
 `
+// EOF

@@ -1,3 +1,5 @@
+// -*- go -*-
+
 package main
 
 const ikvm169 = `
@@ -57,3 +59,4 @@ const ikvm169 = `
   </application-desc>
 </jnlp>
 `
+// EOF

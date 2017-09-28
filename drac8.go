@@ -2,11 +2,11 @@
 
 package main
 
-const viewer7 string = `
+const viewer8 string = `
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp codebase="https://{{ .Host }}:443" spec="1.0+">
 <information>
-  <title>iDRAC7 Virtual Console Client</title>
+  <title>Virtual Console Client</title>
   <vendor>Dell Inc.</vendor>
    <icon href="https://{{ .Host }}:443/images/logo.gif" kind="splash"/>
    <shortcut online="true"/>
@@ -14,16 +14,16 @@ const viewer7 string = `
  <application-desc main-class="com.avocent.idrac.kvm.Main">
    <argument>ip={{ .Host }}</argument>
    <argument>vm=1</argument>
-   <argument>helpurl=https://{{ .Host }}:443/help/contents.html</argument>
    <argument>title=DRAC KVM: {{ .Host }}</argument>
    <argument>user={{ .Username }}</argument>
    <argument>passwd={{ .Password }}</argument>
    <argument>kmport=5900</argument>
    <argument>vport=5900</argument>
    <argument>apcp=1</argument>
+   <argument>reconnect=2</argument>
    <argument>chat=1</argument>
    <argument>F1=1</argument>
-   <argument>custom=1</argument>
+   <argument>custom=0</argument>
    <argument>scaling=15</argument>
    <argument>minwinheight=100</argument>
    <argument>minwinwidth=100</argument>
