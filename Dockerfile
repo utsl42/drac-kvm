@@ -12,18 +12,16 @@
 # OTHER  TORTIOUS ACTION,  ARISING  OUT OF  OR  IN CONNECTION  WITH  THE USE  OR
 # PERFORMANCE OF THIS SOFTWARE.
 
-FROM golang:1.8.3
+FROM golang:1.8.3-stretch
 
 ENV DEBIAN_FRONTEND="noninteractive" \
-    GOLANG_VERSION="1.8.3" \
     MAINTAINER="rockyluke@offline.net" \
     TZ="Europe/Amsterdam"
 
 RUN apt-get update  -qq && \
     apt-get upgrade -qq -y && \
     apt-get install -qq -y \
-      icedtea-netx \
-      openjdk-7-jre
+      icedtea-netx
 
 RUN go get github.com/rockyluke/drac-kvm
 

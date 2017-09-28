@@ -29,7 +29,6 @@ type DRAC struct {
 // Templates is a map of each viewer.jnlp template for
 // the various Dell iDRAC versions, keyed by version number
 var Templates = map[int]string{
-	1: ikvm169,
 	6: viewer6,
 	7: viewer7,
 	8: viewer8,
@@ -65,14 +64,6 @@ func (d *DRAC) GetVersion() int {
 		Transport: transport,
 	}
 
-	// Check for iLO4 specific libs
-	if response, err := client.Get("https://" + d.Host + "/html/intgapp4_231.jar"); err == nil {
-		defer response.Body.Close()
-		if response.StatusCode == 200 {
-			return 104
-		}
-	}
-
 	// Check for iLO3 specific libs
 	if response, err := client.Get("https://" + d.Host + "/html/intgapp3_231.jar"); err == nil {
 		defer response.Body.Close()
@@ -81,11 +72,11 @@ func (d *DRAC) GetVersion() int {
 		}
 	}
 
-	// Check for iDRAC7 specific libs
-	if response, err := client.Head("https://" + d.Host + "/software/avctKVMIOMac64.jar"); err == nil {
+	// Check for iLO4 specific libs
+	if response, err := client.Get("https://" + d.Host + "/html/intgapp4_231.jar"); err == nil {
 		defer response.Body.Close()
 		if response.StatusCode == 200 {
-			return 7
+			return 104
 		}
 	}
 
@@ -97,20 +88,19 @@ func (d *DRAC) GetVersion() int {
 		}
 	}
 
-	// SuperMicro login, if we can post to the path, its probably supermicro
-	// further we will then use the Cookie SID for the jnlp file
-	data := fmt.Sprintf("name=%s&pwd=%s", d.Username, d.Password)
-	if response, err := client.Post("https://"+d.Host+"/cgi/login.cgi", "text/plain", strings.NewReader(data)); err == nil {
+	// Check for iDRAC7 specific libs
+	if response, err := client.Head("https://" + d.Host + "/software/avctKVMIOMac64.jar"); err == nil {
 		defer response.Body.Close()
 		if response.StatusCode == 200 {
-			for _, c := range response.Cookies() {
-				if "SID" == c.Name && c.Value != "" {
-					log.Print("Setting username/password to cookie SID")
-					d.Username = c.Value
-					d.Password = c.Value
-				}
-			}
-			return 1
+			return 7
+		}
+	}
+
+	// Check for iDRAC8 specific libs
+	if response, err := client.Head("https://" + d.Host + "/images/Ttl_2_iDRAC8_Base_ML.png"); err == nil {
+		defer response.Body.Close()
+		if response.StatusCode == 200 {
+			return 8
 		}
 	}
 

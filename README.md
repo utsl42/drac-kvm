@@ -1,13 +1,5 @@
 # drac-kvm ![License badge][license-img]
 
-1. [Overview](#overview)
-2. [Description](#description)
-3. [Setup](#setup)
-4. [Usage](#usage)
-5. [Limitations](#limitations)
-6. [Development](#development)
-7. [Miscellaneous](#miscellaneous)
-
 ## Overview
 
 The integrated Dell Remote Access Controller  or DRAC (iDRAC) is an out-of-band
@@ -26,22 +18,19 @@ for version iLO 3 and iLO 4.
 
 A simple CLI launcher for Dell DRAC and HP iLO KVM sessions
 
-
 This has been tested on the following Dell servers:
 
  * 11th Generation (eg: Dell R710 / iDRAC6)
 
  * 12th Generation (eg: Dell R720 / iDRAC7)
 
+ * 13th Generation (eg: Dell R730 / iDRAC8)
+
 The following HP servers:
 
  * 7th Generation (eg: HP DL120 G7)
 
  * 8th Generation (eg: HP DL160 G8)
-
-This has also been tested against a Supermicro based system:
-
- * X9DR7-LN4F motherboard with ATEN based iKVIM (3.19 fimrware)
 
 ## Setup
 
@@ -50,7 +39,28 @@ It requires  that you  have java  installed on  your machine  (specifically the
 
 ### Docker
 
+#### Linux
+
 ```bash
+docker run \
+       -e DISPLAY=${DISPLAY}
+	   -e XAUTHORITY=/tmp/.Xauthority \
+	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
+	   -v /tmp/.X11-unix:/tmp/.X11-unix \
+	   rockyluke/drac-kvm
+```
+
+#### macOS
+
+```bash
+brew install socat
+socat TCP-LISTEN:6001,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &
+docker run \
+       -e DISPLAY=${DISPLAY}
+	   -e XAUTHORITY=/tmp/.Xauthority \
+	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
+	   -v /tmp/.X11-unix:/tmp/.X11-unix \
+	   rockyluke/drac-kvm
 ```
 
 ### Go
@@ -59,7 +69,7 @@ If you  already have Go  configured on  your system then  you can just  run the
 following to quickly install it:
 
 ```bash
-go get github.com/rockyluke/drac-kvm
+go get github.com/rockylukr/drac-kvm
 ```
 
 ### Homebrew
@@ -84,7 +94,7 @@ Usage of drac-kvm
   -j, --javaws="/usr/bin/javaws": The path to javaws binary
   -p, --password=false: Prompt for password (optional, will use 'calvin' if not present)
   -u, --username="": The DRAC username
-  -v, --version=-1: iDRAC version (6 or 7) (supermicro ikvm as 1)
+  -v, --version=-1: iDRAC version (6, 7 or 8)
 ```
 
 ### Example using default dell credentials (root/calvin)
