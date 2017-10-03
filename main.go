@@ -134,11 +134,11 @@ func main() {
 	// we can launch it with the javaws program
 	filename := os.TempDir() + string(os.PathSeparator) + "drac_" + drac.Host + ".jnlp"
 	ioutil.WriteFile(filename, []byte(viewer), 0600)
-	defer os.Remove(filename)
+    	defer os.Remove(filename)
 
 	// Launch it!
 	log.Printf("Launching DRAC KVM session to %s with %s", drac.Host, filename)
-	if err := exec.Command(*_javaws, filename).Start(); err != nil {
+	if err := exec.Command(*_javaws, "-jnlp", filename, "-nosecurity", "-noupdate", "-Xnofork").Run(); err != nil {
 		os.Remove(filename)
 		log.Fatalf("Unable to launch DRAC (%s)", err)
 	}
@@ -146,4 +146,3 @@ func main() {
 	time.Sleep(time.Duration(*_delay) * time.Second)
 }
 // EOF
-

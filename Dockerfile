@@ -22,7 +22,8 @@ RUN apt-get update  -qq && \
     apt-get upgrade -qq -y && \
     apt-get install -qq -y \
       icedtea-netx \
-      libx11-6
+      libx11-6 \
+      x11-utils
 
 RUN go get github.com/rockyluke/drac-kvm
 

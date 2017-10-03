@@ -72,7 +72,7 @@ If you  already have Go  configured on  your system then  you can just  run the
 following to quickly install it:
 
 ```bash
-go get github.com/rockylukr/drac-kvm
+go get github.com/rockyluke/drac-kvm
 ```
 
 ### Homebrew
