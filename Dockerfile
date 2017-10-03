@@ -15,7 +15,6 @@
 FROM golang:1.8.3-stretch
 
 ENV DEBIAN_FRONTEND="noninteractive" \
-    MAINTAINER="rockyluke@offline.net" \
     TZ="Europe/Amsterdam"
 
 RUN apt-get update  -qq && \
