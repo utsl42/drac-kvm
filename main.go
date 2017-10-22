@@ -142,6 +142,7 @@ func main() {
 		os.Remove(filename)
 		log.Fatalf("Unable to launch DRAC (%s)", err)
 	}
+
 	// Give javaws a few seconds to start & read the jnlp
 	time.Sleep(time.Duration(*_delay) * time.Second)
 }
