@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"strings"
 	"time"
 
 	"github.com/Unknwon/goconfig"
@@ -23,6 +24,7 @@ var _password = pflag.BoolP("password", "p", false, "Prompt for password (option
 var _version = pflag.IntP("version", "v", -1, "iDRAC version (6, 7 or 8)")
 var _delay = pflag.IntP("delay", "d", 10, "Number of seconds to delay for javaws to start up & read jnlp before deleting it")
 var _javaws = pflag.StringP("javaws", "j", DefaultJavaPath(), "The path to javaws binary")
+var _wait = pflag.BoolP("wait", "w", false, "Wait for java console process end")
 
 const (
 	// DefaultUsername is the default username on Dell iDRAC
@@ -32,9 +34,42 @@ const (
 )
 
 func promptPassword() string {
-        fmt.Print("Password: ")
-        password, _ := gopass.GetPasswd()
-        return string(password)
+	fmt.Print("Password: ")
+	password, _ := gopass.GetPasswd()
+	return string(password)
+}
+
+func get_javaws_args(wait_flag bool) string {
+	var javaws_args string = "-jnlp"
+
+	cmd := exec.Command("java", "-version")
+	stderr, err := cmd.StderrPipe()
+
+	if err != nil {
+		//os.Remove(filename)
+		log.Fatalf("Java not present on your system...", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+
+	slurp, _ := ioutil.ReadAll(stderr)
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err)
+	}
+
+	if strings.Contains(string(slurp[:]), "1.7") ||
+		strings.Contains(string(slurp[:]), "1.8") {
+		if wait_flag {
+			javaws_args = "-wait"
+		} else {
+			javaws_args = ""
+		}
+
+	}
+
+	return javaws_args
 }
 
 func main() {
@@ -56,7 +91,7 @@ func main() {
 	version := *_version
 
 	// Get the default username and password from the config
-        if cfg != nil {
+	if cfg != nil {
 		_, err := cfg.GetSection("defaults")
 		if err == nil {
 			log.Printf("Loading default username and password from configuration file")
@@ -116,6 +151,9 @@ func main() {
 			}
 		}
 	}
+	if username == "" && password == "" {
+		log.Printf("Username/Password not provided trying without them...")
+	}
 
 	drac := &DRAC{
 		Host:     host,
@@ -134,16 +172,17 @@ func main() {
 	// we can launch it with the javaws program
 	filename := os.TempDir() + string(os.PathSeparator) + "drac_" + drac.Host + ".jnlp"
 	ioutil.WriteFile(filename, []byte(viewer), 0600)
-    	defer os.Remove(filename)
+	defer os.Remove(filename)
 
 	// Launch it!
 	log.Printf("Launching DRAC KVM session to %s with %s", drac.Host, filename)
-	if err := exec.Command(*_javaws, "-jnlp", filename, "-nosecurity", "-noupdate", "-Xnofork").Run(); err != nil {
+	if err := exec.Command(*_javaws, get_javaws_args(*_wait), filename, "-nosecurity", "-noupdate", "-Xnofork").Run(); err != nil {
 		os.Remove(filename)
-		log.Fatalf("Unable to launch DRAC (%s)", err)
+		log.Fatalf("Unable to launch DRAC (%s), from file %s", err, filename)
 	}
 
 	// Give javaws a few seconds to start & read the jnlp
 	time.Sleep(time.Duration(*_delay) * time.Second)
 }
+
 // EOF

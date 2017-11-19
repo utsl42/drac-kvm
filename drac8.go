@@ -79,4 +79,5 @@ const viewer8 string = `
   </resources>
 </jnlp>
 `
+
 // EOF
