@@ -21,3 +21,8 @@ _testmain.go
 
 *.exe
 *.test
+
+.vscode/*
+.DS_Store
+
+drac-kvm

@@ -4,13 +4,15 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/user"
 	"strings"
 	"time"
+	"io/ioutil"
+
+	"github.com/haad/drac-kvm/kvm"
 
 	"github.com/Unknwon/goconfig"
 	"github.com/howeyc/gopass"
@@ -26,21 +28,14 @@ var _delay = pflag.IntP("delay", "d", 10, "Number of seconds to delay for javaws
 var _javaws = pflag.StringP("javaws", "j", DefaultJavaPath(), "The path to javaws binary")
 var _wait = pflag.BoolP("wait", "w", false, "Wait for java console process end")
 
-const (
-	// DefaultUsername is the default username on Dell iDRAC
-	DefaultUsername = "root"
-	// DefaultPassword is the default password on Dell iDRAC
-	DefaultPassword = "calvin"
-)
-
 func promptPassword() string {
 	fmt.Print("Password: ")
 	password, _ := gopass.GetPasswd()
 	return string(password)
 }
 
-func get_javaws_args(wait_flag bool) string {
-	var javaws_args string = "-jnlp"
+func getJavawsArgs(waitFlag bool) string {
+	var javawsArgs = "-jnlp"
 
 	cmd := exec.Command("java", "-version")
 	stderr, err := cmd.StderrPipe()
@@ -61,21 +56,24 @@ func get_javaws_args(wait_flag bool) string {
 
 	if strings.Contains(string(slurp[:]), "1.7") ||
 		strings.Contains(string(slurp[:]), "1.8") {
-		if wait_flag {
-			javaws_args = "-wait"
+		if waitFlag {
+			javawsArgs = "-wait"
 		} else {
-			javaws_args = ""
+			javawsArgs = ""
 		}
 
 	}
 
-	return javaws_args
+	return javawsArgs
 }
 
 func main() {
 	var host string
 	var username string
 	var password string
+	var version int
+
+	var vendor = "dell"
 
 	// Parse the CLI flags
 	pflag.Parse()
@@ -88,7 +86,6 @@ func main() {
 	// Search for existing config file
 	usr, _ := user.Current()
 	cfg, _ := goconfig.LoadConfigFile(usr.HomeDir + "/.drackvmrc")
-	version := *_version
 
 	// Get the default username and password from the config
 	if cfg != nil {
@@ -101,14 +98,13 @@ func main() {
 			if uerr == nil {
 				username = uservalue
 			} else {
-				username = DefaultUsername
+				username = kvm.GetDefaultUsername(vendor)
 			}
 			if perr == nil {
 				password = passvalue
 			} else {
-				password = DefaultPassword
+				password = kvm.GetDefaultPassword(vendor)
 			}
-
 		}
 	}
 
@@ -151,32 +147,25 @@ func main() {
 			}
 		}
 	}
+
+	version = *_version
+	if cfg != nil && hostFound {
+		value, err := cfg.Int(*_host, "version")
+		if err == nil {
+			version = value
+		}
+	}
+
 	if username == "" && password == "" {
 		log.Printf("Username/Password not provided trying without them...")
 	}
 
-	drac := &DRAC{
-		Host:     host,
-		Username: username,
-		Password: password,
-		Version:  version,
-	}
-
-	// Generate a DRAC viewer JNLP
-	viewer, err := drac.Viewer()
-	if err != nil {
-		log.Fatalf("Unable to generate DRAC viewer for %s@%s (%s)", drac.Username, drac.Host, err)
-	}
-
-	// Write out the DRAC viewer to a temporary file so that
-	// we can launch it with the javaws program
-	filename := os.TempDir() + string(os.PathSeparator) + "drac_" + drac.Host + ".jnlp"
-	ioutil.WriteFile(filename, []byte(viewer), 0600)
+	filename := kvm.CreateKVM(host, username, password, vendor, version, true).GetJnlpFile()
 	defer os.Remove(filename)
 
 	// Launch it!
-	log.Printf("Launching DRAC KVM session to %s with %s", drac.Host, filename)
-	if err := exec.Command(*_javaws, get_javaws_args(*_wait), filename, "-nosecurity", "-noupdate", "-Xnofork").Run(); err != nil {
+	log.Printf("Launching KVM session with %s", filename)
+	if err := exec.Command(*_javaws, getJavawsArgs(*_wait), filename, "-nosecurity", "-noupdate", "-Xnofork").Run(); err != nil {
 		os.Remove(filename)
 		log.Fatalf("Unable to launch DRAC (%s), from file %s", err, filename)
 	}
