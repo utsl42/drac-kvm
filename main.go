@@ -21,7 +21,7 @@ import (
 
 const (
 	// DracKVMVersion current application version
-	DracKVMVersion = "0.99.0"
+	DracKVMVersion = "2.0.0"
 )
 
 func promptPassword() string {
