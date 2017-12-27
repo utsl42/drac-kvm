@@ -3,6 +3,7 @@
 package kvm
 
 import (
+	"errors"
 	"github.com/haad/drac-kvm/dell"
 	"github.com/haad/drac-kvm/hp"
 	"github.com/haad/drac-kvm/supermicro"
@@ -31,7 +32,7 @@ type Config struct {
 // KVM contains all of the information required
 // to connect to a KVM
 type KVM struct {
-	Vendor   string
+	Vendor string
 	Config
 	Driver
 }
@@ -44,35 +45,35 @@ func CreateKVM(Host string, Username string, Password string, Vendor string,
 	var driver Driver
 
 	switch vn := Vendor; vn {
-		case "dell":
-			driver = &dell.KvmDellDriver{
-				Host: 	  Host,
-				Username: Username,
-				Password: Password,
-				Version:  Version,
-			}
-		case "supermicro":
-			driver = &supermicro.KvmSupermicroDriver{
-				Host: 	  Host,
-				Username: Username,
-				Password: Password,
-				Version:  169,
-			}
-		case "hp":
-			driver = &hp.KvmHpDriver{
-				Host: 	  Host,
-				Username: Username,
-				Password: Password,
-				Version:  -1,
-			}
-		case "ibm":
-			log.Fatalf("IBM/Lennovo support not implemented yet KVM as driver: %s", vn)
-		default:
-			log.Fatalf("Unsupported KVM vendor %s", vn)
+	case "dell":
+		driver = &dell.KvmDellDriver{
+			Host:     Host,
+			Username: Username,
+			Password: Password,
+			Version:  Version,
+		}
+	case "supermicro":
+		driver = &supermicro.KvmSupermicroDriver{
+			Host:     Host,
+			Username: Username,
+			Password: Password,
+			Version:  169,
+		}
+	case "hp":
+		driver = &hp.KvmHpDriver{
+			Host:     Host,
+			Username: Username,
+			Password: Password,
+			Version:  -1,
+		}
+	case "ibm":
+		log.Fatalf("IBM/Lennovo support not implemented yet KVM as driver: %s", vn)
+	default:
+		log.Fatalf("Unsupported KVM vendor %s", vn)
 	}
 
 	kvm := &KVM{
-		Vendor:   Vendor,
+		Vendor: Vendor,
 		Config: Config{
 			InsecureSkipVerify: InsecureSkipVerify,
 		},
@@ -81,69 +82,6 @@ func CreateKVM(Host string, Username string, Password string, Vendor string,
 
 	return kvm
 }
-
-/* getVersion attempts to detect the version of iKVM/iLO/by checking
- if various known libraries are available via HTTP GET requests.
- Returns the version if found, or -1 if unknown
- TODO: Figure out how to detect supermicro/iLO if possible.
-func (d *KVM) getVersion() (string, int) {
-
-		log.Print("Detecting KVM vendor and driver version...")
-
-		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-			Dial: func(netw, addr string) (net.Conn, error) {
-				deadline := time.Now().Add(5 * time.Second)
-				c, err := net.DialTimeout(netw, addr, time.Second*5)
-				if err != nil {
-					return nil, err
-				}
-				c.SetDeadline(deadline)
-				return c, nil
-			},
-		}
-
-		client := &http.Client{
-			Transport: transport,
-		}
-
-		// Check for iLO3 specific libs
-		if response, err := client.Get("https://" + d.Host + "/html/intgapp3_231.jar"); err == nil {
-			defer response.Body.Close()
-			if response.StatusCode == 200 {
-				return "dell", 103
-			}
-		}
-
-		// Check for iLO4 specific libs
-		if response, err := client.Get("https://" + d.Host + "/html/intgapp4_231.jar"); err == nil {
-			defer response.Body.Close()
-			if response.StatusCode == 200 {
-				return "dell", 104
-			}
-		}
-
-		// Check for iDRAC6 specific libs
-		if response, err := client.Head("https://" + d.Host + "/software/jpcsc.jar"); err == nil {
-			defer response.Body.Close()
-			if response.StatusCode == 200 {
-				return "dell", 6
-			}
-		}
-
-		// Check for iDRAC7 specific libs
-		if response, err := client.Head("https://" + d.Host + "/software/avctKVMIOMac64.jar"); err == nil {
-			defer response.Body.Close()
-			if response.StatusCode == 200 {
-				return "dell", 7
-			}
-		}
-
-		return -1
-	}
-*/
 
 // GetJnlpFile Creates JNLP file and return PATH to it
 func (d *KVM) GetJnlpFile() string {
@@ -171,7 +109,7 @@ func GetDefaultUsername(Vendor string) string {
 		return supermicro.DefaultUsername
 	case "hp":
 		return hp.DefaultUsername
-	case "IBM":
+	case "ibm":
 		log.Fatalf("IBM/Lennovo support not implemented yet KVM vendor %s", vn)
 	default:
 		log.Fatalf("Unsupported KVM vendor %s", vn)
@@ -188,12 +126,29 @@ func GetDefaultPassword(Vendor string) string {
 		return supermicro.DefaultPassword
 	case "hp":
 		return hp.DefaultPassword
-	case "IBM":
+	case "ibm":
 		log.Fatalf("IBM/Lennovo support not implemented yet KVM vendor %s", vn)
 	default:
 		log.Fatalf("Unsupported KVM vendor %s", vn)
 	}
 	return ""
+}
+
+// CheckVendorString will test if provided vendor is supported
+func CheckVendorString(Vendor string) (int, error) {
+	switch vn := Vendor; vn {
+	case "dell":
+		break
+	case "supermicro":
+		break
+	case "hp":
+		break
+	case "ibm":
+		fallthrough
+	default:
+		return 1, errors.New("provided vendor not supported")
+	}
+	return 0, nil
 }
 
 // EOF

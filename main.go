@@ -4,13 +4,13 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/user"
 	"strings"
 	"time"
-	"io/ioutil"
 
 	"github.com/haad/drac-kvm/kvm"
 
@@ -19,14 +19,10 @@ import (
 	"github.com/ogier/pflag"
 )
 
-// CLI flags
-var _host = pflag.StringP("host", "h", "some.hostname.com", "The DRAC host (or IP)")
-var _username = pflag.StringP("username", "u", "", "The DRAC username")
-var _password = pflag.BoolP("password", "p", false, "Prompt for password (optional, will use 'calvin' if not present)")
-var _version = pflag.IntP("version", "v", -1, "iDRAC version (6, 7 or 8)")
-var _delay = pflag.IntP("delay", "d", 10, "Number of seconds to delay for javaws to start up & read jnlp before deleting it")
-var _javaws = pflag.StringP("javaws", "j", DefaultJavaPath(), "The path to javaws binary")
-var _wait = pflag.BoolP("wait", "w", false, "Wait for java console process end")
+const (
+	// DracKVMVersion current application version
+	DracKVMVersion = "0.99.0"
+)
 
 func promptPassword() string {
 	fmt.Print("Password: ")
@@ -69,14 +65,31 @@ func getJavawsArgs(waitFlag bool) string {
 
 func main() {
 	var host string
+	var vendor string
 	var username string
 	var password string
 	var version int
 
-	var vendor = "dell"
+	// CLI flags
+	var _host = pflag.StringP("host", "h", "", "The DRAC host (or IP)")
+	var _vendor = pflag.StringP("vendor", "V", "", "The KVM Vendor")
+
+	var _username = pflag.StringP("username", "u", "", "The KVM username")
+	var _password = pflag.BoolP("password", "p", false, "Prompt for password (optional, will use default vendor if not present)")
+	var _version = pflag.IntP("version", "v", -1, "KVM vendor specific version for idrac: (6, 7 or 8)")
+
+	var _delay = pflag.IntP("delay", "d", 10, "Number of seconds to delay for javaws to start up & read jnlp before deleting it")
+	var _javaws = pflag.StringP("javaws", "j", DefaultJavaPath(), "The path to javaws binary")
+	var _wait = pflag.BoolP("wait", "w", false, "Wait for java console process end")
 
 	// Parse the CLI flags
 	pflag.Parse()
+
+	if *_host == "" {
+		log.Printf("Host parameter is requried...")
+		pflag.PrintDefaults()
+		os.Exit(1)
+	}
 
 	// Check we have access to the javaws binary
 	if _, err := os.Stat(*_javaws); err != nil {
@@ -87,77 +100,89 @@ func main() {
 	usr, _ := user.Current()
 	cfg, _ := goconfig.LoadConfigFile(usr.HomeDir + "/.drackvmrc")
 
-	// Get the default username and password from the config
-	if cfg != nil {
-		_, err := cfg.GetSection("defaults")
-		if err == nil {
-			log.Printf("Loading default username and password from configuration file")
-			uservalue, uerr := cfg.GetValue("defaults", "username")
-			passvalue, perr := cfg.GetValue("defaults", "password")
+	/*
+	 *	Values loaded from config file has lower priority than command line arguments.
+	 *  For each possible option we first check if command line argument was passed and
+	 *  if not then we try to get value from config file.
+	 *
+	 */
+	if value, err := cfg.GetValue(*_host, "host"); err == nil {
+		host = value
+	} else {
+		host = *_host
+	}
 
-			if uerr == nil {
-				username = uservalue
+	/*
+	 *	For loading vendor string we have following order:
+	 *
+	 *	1) Check if vendor was used as command line argument
+	 *	2) Try to load it from _host_ section of config
+	 *	3) Check if _defaults_ section of config contains _vendor_
+	 *	4) Use default "dell" value to keep original behaviour
+	 *
+	 */
+	if *_vendor == "" {
+		if value, err := cfg.GetValue(*_host, "vendor"); err == nil {
+			vendor = value
+		} else {
+			// To keep old default behaviour we set vendor string to dell by default.
+			vendor = "dell"
+		}
+	} else {
+		vendor = *_vendor
+	}
+
+	if _, err := kvm.CheckVendorString(vendor); err != nil {
+		log.Fatalf("Provided vendor: %s, is not supported consider adding support with Github PR...", vendor)
+	}
+
+	/*
+	 *  For loading username/password we have following order:
+	 *
+	 *	1) Check if username/password was used as argument
+	 *  2) Try to load them from _host_ section of config
+	 *  3) Check if _defaults_ section of our config contains username/password
+	 *  4) Use default vendor provided values defined in vendor packages.
+	 */
+	if *_username == "" {
+		if value, err := cfg.GetValue(*_host, "username"); err == nil {
+			username = value
+		} else {
+			if defaultvalue, err := cfg.GetValue("defaults", "username"); err == nil {
+				username = defaultvalue
 			} else {
 				username = kvm.GetDefaultUsername(vendor)
 			}
-			if perr == nil {
-				password = passvalue
+		}
+	} else {
+		username = *_username
+	}
+
+	if !*_password {
+		if value, err := cfg.GetValue(*_host, "password"); err == nil {
+			password = value
+		} else {
+			if defaultvalue, err := cfg.GetValue("defaults", "password"); err == nil {
+				password = defaultvalue
 			} else {
 				password = kvm.GetDefaultPassword(vendor)
 			}
 		}
-	}
-
-	// Finding host in config file or using the one passed in param
-	host = *_host
-	hostFound := false
-	if cfg != nil {
-		_, err := cfg.GetSection(*_host)
-		if err == nil {
-			value, err := cfg.GetValue(*_host, "host")
-			if err == nil {
-				hostFound = true
-				host = value
-			} else {
-				hostFound = true
-				host = *_host
-			}
-		}
-	}
-
-	if *_username != "" {
-		username = *_username
 	} else {
-		if cfg != nil && hostFound {
-			value, err := cfg.GetValue(*_host, "username")
-			if err == nil {
-				username = value
-			}
-		}
-	}
-
-	// If password not set, prompt
-	if *_password {
 		password = promptPassword()
-	} else {
-		if cfg != nil && hostFound {
-			value, err := cfg.GetValue(*_host, "password")
-			if err == nil {
-				password = value
+	}
+
+	// Version is only used with dell KVM vendor..
+	if vendor == "dell" && *_version == -1 {
+		if value, err := cfg.Int(*_host, "version"); err == nil {
+			version = value
+		} else {
+			if defaultvalue, err := cfg.Int("defaults", "version"); err == nil {
+				version = defaultvalue
 			}
 		}
-	}
-
-	version = *_version
-	if cfg != nil && hostFound {
-		value, err := cfg.Int(*_host, "version")
-		if err == nil {
-			version = value
-		}
-	}
-
-	if username == "" && password == "" {
-		log.Printf("Username/Password not provided trying without them...")
+	} else {
+		version = *_version
 	}
 
 	filename := kvm.CreateKVM(host, username, password, vendor, version, true).GetJnlpFile()
