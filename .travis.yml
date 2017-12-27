@@ -4,6 +4,10 @@ go:
   - 1.9
   - master
 
+# Don't email me the results of the test runs.
+notifications:
+  email: false
+
 before_script:
   - go get github.com/golang/lint/golint                        # Linter
   - go get honnef.co/go/tools/cmd/megacheck                     # Badass static analyzer/linter
