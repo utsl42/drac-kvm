@@ -29,26 +29,24 @@ const (
 // SupermicroTemplates is a map of each viewer.jnlp template for
 // the various Supermicro iKVM versions, keyed by version number
 var SupermicroTemplates = map[int]string{
-	169:   ikvm169,
+	169: ikvm169,
 }
 
 // Viewer returns a viewer.jnlp template filled out with the
 // necessary details to connect to a particular DRAC host
 func (d *KvmSupermicroDriver) Viewer() (string, error) {
 
-		var version int
+	if _, ok := SupermicroTemplates[d.Version]; !ok {
+		msg := fmt.Sprintf("no support for iKVM v%d", d.Version)
+		return "", errors.New(msg)
+	}
 
-		if _, ok := SupermicroTemplates[version]; !ok {
-			msg := fmt.Sprintf("no support for iKVM v%d", version)
-			return "", errors.New(msg)
-		}
-
-		log.Printf("Found iKVM version %d", version)
-		// Generate a JNLP viewer from the template
-		// Injecting the host/user/pass information
-		buff := bytes.NewBufferString("")
-		err := template.Must(template.New("viewer").Parse(SupermicroTemplates[version])).Execute(buff, d)
-		return buff.String(), err
+	log.Printf("Found iKVM version %d", d.Version)
+	// Generate a JNLP viewer from the template
+	// Injecting the host/user/pass information
+	buff := bytes.NewBufferString("")
+	err := template.Must(template.New("viewer").Parse(SupermicroTemplates[d.Version])).Execute(buff, d)
+	return buff.String(), err
 }
 
 // GetHost return Configured driver Host

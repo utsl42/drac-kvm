@@ -2,7 +2,7 @@
 
 ## Overview
 
-The integrated Dell Remote Access Controller  or DRAC (iDRAC) is an out-of-band
+The integrated Dell Remote Access Controller or DRAC (iDRAC) is an out-of-band
 management platform  on certain Dell  servers.  It provides  functionality that
 helps you deploy,  update, monitor and maintain Dell PowerEdge  servers with or
 without a systems management software agent.
@@ -13,6 +13,10 @@ A preliminary  implementation of iLO  (Integrated Lights Out) KVM  is available
 for version iLO 3 and iLO 4.
 
 [hp.com](https://www.hpe.com/)
+
+Support for Supermicro KVM implementation was added in version 2.0.0.
+
+[supermicro.com](https://www.supermicro.com/)
 
 ## Description
 
@@ -31,6 +35,10 @@ This has been tested on the following HP servers:
  * 7th Generation (eg: HP DL120 G7)
 
  * 8th Generation (eg: HP DL160 G8)
+
+This has been tested on the following SuperMicro servers:
+
+  * PCS S2420Q-M5
 
 ## Setup
 
@@ -133,34 +141,37 @@ username = foo
 password = bar
 
 [192.168.0.42]
+vendor = dell
 username = foo
 password = bar
 
 [web-1]
+vendor = hp
 host = 10.33.0.1
 username = root
 password = password4root
 
 [web-2]
+vendor = supermicro
 host = 10.33.0.2
 username = root
 ```
 
 ```bash
 # Use IP, username and password from drackvmrc for this ip
-drac-kvm -h 192.168.0.42
+drac-kvm -h 192.168.0.42 -V dell
 2014/06/26 16:01:11 Detecting iRAC version...
 2014/06/26 16:01:11 Found iDRAC version 7
 2014/06/26 16:01:11 Launching DRAC KVM session to 192.168.0.42
 
 # Same for host alias web-1
-drac-kvm -h web-1
+drac-kvm -h web-1 -V hp
 2014/06/26 16:01:11 Detecting iRAC version...
 2014/06/26 16:01:11 Found iDRAC version 7
 2014/06/26 16:01:11 Launching DRAC KVM session to 10.33.0.1
 
 # Specify -p option in order to do not use defaut password
-drac-kvm -h web-2 -p
+drac-kvm -h web-2 -p -V supermicro
 Password: **********
 2014/06/26 16:01:11 Detecting iRAC version...
 2014/06/26 16:01:11 Found iDRAC version 7
