@@ -1,4 +1,4 @@
-# drac-kvm ![License badge][license-img]
+# drac-kvm ![License badge][license-img] [![Build Status](https://travis-ci.org/haad/drac-kvm.svg?branch=master)](https://travis-ci.org/haad/drac-kvm)
 
 ## Overview
 
