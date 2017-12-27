@@ -21,7 +21,7 @@ import (
 
 const (
 	// DracKVMVersion current application version
-	DracKVMVersion = "2.0.0"
+	DracKVMVersion = "2.0.1"
 )
 
 func promptPassword() string {
@@ -38,7 +38,7 @@ func getJavawsArgs(waitFlag bool) string {
 
 	if err != nil {
 		//os.Remove(filename)
-		log.Fatalf("Java not present on your system...", err)
+		log.Fatalf("Java not present on your system... (%s)", err)
 	}
 
 	if err := cmd.Start(); err != nil {
@@ -69,6 +69,12 @@ func main() {
 	var username string
 	var password string
 	var version int
+
+	pflag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Program %s version: %s\n\n", os.Args[0], DracKVMVersion)
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		pflag.PrintDefaults()
+	}
 
 	// CLI flags
 	var _host = pflag.StringP("host", "h", "", "The DRAC host (or IP)")
