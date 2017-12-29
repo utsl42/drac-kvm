@@ -121,5 +121,4 @@ func (d *KvmHpDriver) GetUsername() string {
 func (d *KvmHpDriver) GetPassword() string {
 	return d.Password
 }
-
 // EOF
