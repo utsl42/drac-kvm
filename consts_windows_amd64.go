@@ -27,5 +27,4 @@ func visit(path string, f os.FileInfo, err error) error {
 	}
 	return nil
 }
-
 // EOF
