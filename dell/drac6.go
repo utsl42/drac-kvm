@@ -1,6 +1,6 @@
 // -*- go -*-
 
-package main
+package dell
 
 const viewer6 string = `
 <?xml version="1.0" encoding="UTF-8"?>
@@ -41,4 +41,5 @@ const viewer6 string = `
   </resources>
 </jnlp>
 `
+
 // EOF
