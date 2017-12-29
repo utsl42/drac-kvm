@@ -150,5 +150,4 @@ func CheckVendorString(Vendor string) (int, error) {
 	}
 	return 0, nil
 }
-
 // EOF
