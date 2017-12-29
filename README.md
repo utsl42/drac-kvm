@@ -1,4 +1,4 @@
-# drac-kvm ![License badge][license-img] [![Build Status](https://travis-ci.org/haad/drac-kvm.svg?branch=master)](https://travis-ci.org/haad/drac-kvm)
+# drac-kvm ![License][license-img] ![Build][build-img]
 
 ## Overview
 
@@ -199,3 +199,4 @@ Feel free to contribute on GitHub.
 ```
 
 [license-img]: https://img.shields.io/badge/license-Apache%202.0-blue.svg
+[build-img]: https://travis-ci.org/rockyluke/drac-kvm.svg?branch=master
