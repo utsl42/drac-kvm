@@ -73,5 +73,4 @@ func (d *KvmDellDriver) GetUsername() string {
 func (d *KvmDellDriver) GetPassword() string {
 	return d.Password
 }
-
 // EOF
