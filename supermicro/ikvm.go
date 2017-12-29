@@ -63,5 +63,4 @@ func (d *KvmSupermicroDriver) GetUsername() string {
 func (d *KvmSupermicroDriver) GetPassword() string {
 	return d.Password
 }
-
 // EOF
