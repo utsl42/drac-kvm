@@ -1,4 +1,7 @@
-# drac-kvm ![License][license-img] ![Build][build-img]
+# drac-kvm
+
+[![License][license-img]][license-url]
+[![Build][build-img]][build-url]
 
 ## Overview
 
@@ -24,55 +27,23 @@ A simple CLI launcher for Dell DRAC and HP iLO KVM sessions
 
 This has been tested on the following Dell servers:
 
- * 11th Generation (eg: Dell R710 / iDRAC6)
-
- * 12th Generation (eg: Dell R720 / iDRAC7)
-
- * 13th Generation (eg: Dell R730 / iDRAC8)
+* 11th Generation (eg: Dell R710 / iDRAC6)
+* 12th Generation (eg: Dell R720 / iDRAC7)
+* 13th Generation (eg: Dell R730 / iDRAC8)
 
 This has been tested on the following HP servers:
 
- * 7th Generation (eg: HP DL120 G7)
-
- * 8th Generation (eg: HP DL160 G8)
+* 7th Generation (eg: HP DL120 G7)
+* 8th Generation (eg: HP DL160 G8)
 
 This has been tested on the following SuperMicro servers:
 
-  * PCS S2420Q-M5
+* PCS S2420Q-M5
 
 ## Setup
 
 It requires  that you  have java  installed on  your machine  (specifically the
 `javaws` binary).
-
-### Docker
-
-#### Linux
-
-```bash
-docker run \
-       -e DISPLAY=${DISPLAY} \
-	   -e XAUTHORITY=/tmp/.Xauthority \
-	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
-	   -v /tmp/.X11-unix:/tmp/.X11-unix \
-	   rockyluke/drac-kvm
-```
-
-#### macOS
-
-```bash
-brew install socat
-
-DISPLAY_ADDRESS=$(ifconfig|grep 'inet '|grep -v '127.0.0.1'| head -1|awk '{print $2}')
-
-socat TCP-LISTEN:6001,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &
-docker run \
-       -e DISPLAY=${DISPLAY_ADDRESS} \
-	   -e XAUTHORITY=/tmp/.Xauthority \
-	   -v ${HOME}/.Xauthority:/tmp/.Xauthority \
-	   -v /tmp/.X11-unix:/tmp/.X11-unix \
-	   rockyluke/drac-kvm
-```
 
 ### Go
 
@@ -157,36 +128,16 @@ host = 10.33.0.2
 username = root
 ```
 
-```bash
-# Use IP, username and password from drackvmrc for this ip
-drac-kvm -h 192.168.0.42 -V dell
-2014/06/26 16:01:11 Detecting iRAC version...
-2014/06/26 16:01:11 Found iDRAC version 7
-2014/06/26 16:01:11 Launching DRAC KVM session to 192.168.0.42
-
-# Same for host alias web-1
-drac-kvm -h web-1 -V hp
-2014/06/26 16:01:11 Detecting iRAC version...
-2014/06/26 16:01:11 Found iDRAC version 7
-2014/06/26 16:01:11 Launching DRAC KVM session to 10.33.0.1
-
-# Specify -p option in order to do not use defaut password
-drac-kvm -h web-2 -p -V supermicro
-Password: **********
-2014/06/26 16:01:11 Detecting iRAC version...
-2014/06/26 16:01:11 Found iDRAC version 7
-2014/06/26 16:01:11 Launching DRAC KVM session to 10.33.0.2
-```
-
 ## Credits
 
-@jamesdotcuff's helpful blog post:
-
-http://blog.jcuff.net/2013/10/fun-with-idrac.html
+@jamesdotcuff [blog post](http://blog.jcuff.net/2013/10/fun-with-idrac.html)
+@PaulMaddox [initial release](https://github.com/PaulMaddox/drac-kvm)
 
 ## Development
 
 Feel free to contribute on GitHub.
+
+## Miscellaneous
 
 ```
     ╚⊙ ⊙╝
@@ -198,5 +149,7 @@ Feel free to contribute on GitHub.
    ╚═(███)═╝
 ```
 
-[license-img]: https://img.shields.io/badge/license-Apache%202.0-blue.svg
+[license-img]: https://img.shields.io/badge/license-ISC-blue.svg
+[license-url]: LICENSE
 [build-img]: https://travis-ci.org/rockyluke/drac-kvm.svg?branch=master
+[build-url]: https://travis-ci.org/rockyluke/drac-kvm
