@@ -24,7 +24,7 @@ RUN apt-get update  -qq && \
       libx11-6 \
       x11-utils
 
-RUN go get github.com/rockyluke/drac-kvm
+RUN go get github.com/utsl42/drac-kvm
 
 ENTRYPOINT [ "drac-kvm" ]
 
