@@ -4,9 +4,9 @@ package kvm
 
 import (
 	"errors"
-	"github.com/rockyluke/drac-kvm/dell"
-	"github.com/rockyluke/drac-kvm/hp"
-	"github.com/rockyluke/drac-kvm/supermicro"
+	"github.com/utsl42/drac-kvm/dell"
+	"github.com/utsl42/drac-kvm/hp"
+	"github.com/utsl42/drac-kvm/supermicro"
 	"io/ioutil"
 	"log"
 	"os"

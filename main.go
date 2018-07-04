@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rockyluke/drac-kvm/kvm"
+	"github.com/utsl42/drac-kvm/kvm"
 
 	"github.com/Unknwon/goconfig"
 	"github.com/howeyc/gopass"
